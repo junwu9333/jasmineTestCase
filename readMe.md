@@ -6,7 +6,7 @@ already node modules are installed in your system
 run the below cmds to test to node is succesfully installed or not
 -----------------------------------------------------------------
 
-node --version
+node --version                                                                                                   
 npm --version
 
 
