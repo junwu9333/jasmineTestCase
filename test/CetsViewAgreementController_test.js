@@ -101,6 +101,22 @@ it('should check the doNotCancel function', function() {
 	expect($scope.showPopup).toBe(false);
 });
       
+
+//this is latest for save files please find and attch to your current file
+
+it('should add the list to the below items', function() {
+
+  $scope.saveFiles();
+  expect($scope.showAttached).toBe(true);
+  expect($scope.browsedFiles.length).toBe(3);
+  expect($scope.saveUploadData.length).toBe(3);
+  
+});
+
+
+
+
+
   
 });
 })(window, window.angular);

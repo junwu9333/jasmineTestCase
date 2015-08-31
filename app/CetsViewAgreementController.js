@@ -1,58 +1,63 @@
-angular.module('cetsApp',[]).controller('cetsViewAgreementController', function ($rootScope,$scope) {
-    $rootScope.showSideNav = true;
- 
-    $scope.viewAgmt = function(id) {
-            $scope.fName = $scope.users[id-1].fName;
-            $scope.lName = $scope.users[id-1].lName;
-    };
- 
-});
-
- 
-_____________________________________
 /**
-* Created by e7upcp on 7/22/2015.
+* Created by e7uldc on 7/22/2015.
 * controller to view the agreement list
 */
 var cetsViewAgreementController =["$scope", "$rootScope", "$log","$location", "CetsServiceFactory", "SessionKeeper",
     function ($scope,$rootScope,$log,$location,CetsServiceFactory,SessionKeeper) {
     $rootScope.showSideNav = true;
-        $scope.termsList = [];
-		$scope.numberOfFiles = 0;
-        var cetsSessionBean = getSessionData();
-        $scope.browsedFiles = [];
-    
-        var regex  = /^(doc|docx|pdf|xls|xlsx|txt|csv|ppt|jpg)$/;
+    $scope.showAttached =false;
+               $scope.termsList = [];
  
-                 $scope.files = [];
-                 $scope.uploadFile = function(){
+//        var cetsSessionBean = getSessionData();
+        $scope.browsedFiles = [];
+ 
+        var regex  = /^(doc|docx|pdf|xls|xlsx|txt|csv|ppt|jpg)$/;
+        var regexFileName =/^[a-zA-Z0-9-_\\" \"]+$/;
+ 
+                 $scope.files ;
+                 $scope.uploadFile = function(event){
                      $scope.files = event.target.files;
-                     if($scope.files.length >10) {
-                      alert('Only 10 files allowed');
+                                var numberOfRowsInTable = $scope.browsedFiles.length + $scope.files.length;
+                     if(numberOfRowsInTable > 10) {
+                      alert('More than 10 files cannot be attached');
+                      return;
                   }
                      for (var i =0; i< $scope.files.length; i++ ){
                                 var fileInfo = {
-                                            
                                              fileName : '',
-                                             validationMsg : 'Success!'
-                       
+                                             validationMsg : ''
                          }
                                 var fileName = $scope.files[i].name;
                                 fileInfo.fileName = fileName;
-                         var res = fileName.split(".");
-                         var extension = res[1];
+                                var fileNameOnly = fileName.split(".");
+                     var posDot = fileName.lastIndexOf(".");
+                     var extension=fileName.substring(posDot+1);
+ 
+                      //var extension = res[1];
                          if (!(regex.test(extension))) {
-                                fileInfo.validationMsg = 'File extension not allowed';
+                                fileInfo.validationMsg = 'Unsupported file extension';
                            }
-                                if($scope.files[i].size>25000) {
-                                               fileInfo.validationMsg = 'File size exceeds limit';
-                          //alert('Size exceeds limit');
+                                if($scope.files[i].size > 25000000) {
+                                               if (fileInfo.validationMsg != ''){
+                                                              fileInfo.validationMsg = fileInfo.validationMsg.concat(' & File cannot be more than 25MB');
+                                               }else{
+                                                              fileInfo.validationMsg = 'File cannot be more than 25MB';
+                                               }
                       }
+                                if (fileNameOnly[0].search(regexFileName) == -1) {
+                                               if (fileInfo.validationMsg != ''){
+                                                              fileInfo.validationMsg = fileInfo.validationMsg.concat(' & File name must be alpha numeric');
+                                               }else{
+                                                              fileInfo.validationMsg = 'File name must be alpha numeric';
+                                               }
+                           }
+                                if (fileInfo.validationMsg == ''){
+                                               fileInfo.validationMsg = 'Ready to Upload';
+                                }
                                 $scope.browsedFiles.push(fileInfo);
-                               
+ 
                      }
-                     
-                      $scope.$apply();
+                  $scope.$apply();
                        var filename = event.target.files[0].name;
                        //alert('file was selected: ' + filename);
                    };
@@ -81,7 +86,7 @@ var cetsViewAgreementController =["$scope", "$rootScope", "$log","$location", "C
                                           {
                                               "name": "Claims/Settlements",
                                               "id": "6"
-                                         },
+                                          },
                                           {
                                               "name": "Eligibility Criteria",
                                               "id": "7"
@@ -106,8 +111,8 @@ var cetsViewAgreementController =["$scope", "$rootScope", "$log","$location", "C
                          };
                          $scope.selected_items = [];
                      // $scope.termCategory.push();
-                  
  
+/*
     function resetCetsSessionBean(){
         //to reset the current session
         cetsSessionBean=CetsServiceFactory.initCetsSessionBean($scope.current);
@@ -124,7 +129,7 @@ var cetsViewAgreementController =["$scope", "$rootScope", "$log","$location", "C
         $scope.cetsSessionBean=current.cetsSessionBean;
         return current.cetsSessionBean;
     }
- 
+*/
     $scope.viewAgreementData = {
         //It will go  to view the Agreement data
         currentAgreement : "",
@@ -133,9 +138,9 @@ var cetsViewAgreementController =["$scope", "$rootScope", "$log","$location", "C
  
     $scope.gotoCreateAgreement=function(){
                $rootScope.clrbtn=false;
-   
+ 
         $location.path('/createAgreement');
-       
+ 
     };
  
                $scope.getTermsList = function(agmtId){
@@ -148,18 +153,17 @@ var cetsViewAgreementController =["$scope", "$rootScope", "$log","$location", "C
  
     if(null!==$location.path() && $location.path().length>0 && "/viewAgreement"===$location.path()){
         $log.debug("cetsViewAgreementController :: In View Agreement controller");
-        var current=SessionKeeper.read();
+/*        var current=SessionKeeper.read();
         $scope.current=current;
         if(!cetsSessionBean){
             if(!current.cetsSessionBean){
                 current.cetsSessionBean = resetCetsSessionBean();
             }
             cetsSessionBean = current.cetsSessionBean;
-        }
-        $scope.isSuccess = cetsSessionBean.isAgmtCreated;
-        $scope.viewAgreementData.currentAgreement = cetsSessionBean.currentAgreement;
-        $scope.viewAgreementData.createdBy = cetsSessionBean.currentAgreement.createdBy;
-        $scope.viewAgreementData.allComponentsToBeHidden = current.cetsSessionBean.allComponentsToBeHidden;
+        }*/
+        $scope.isSuccess = SessionKeeper.get('isAgmtCreated');;
+        $scope.viewAgreementData.currentAgreement = SessionKeeper.get('currentAgreement');
+        $scope.allComponentsToBeHidden = SessionKeeper.get('allComponentsToBeHidden');
                               $scope.getTermsList($scope.viewAgreementData.currentAgreement.agreementId);
     }
 /*
@@ -184,5 +188,16 @@ var cetsViewAgreementController =["$scope", "$rootScope", "$log","$location", "C
         //cancel the details in the list
         window.history.back();
     }
+        $scope.saveFiles=function(){
+            console.log($scope.browsedFiles);
+            $scope.showAttached=true;
+            $scope.saveUploadData=[];
+            for(var i=0;i<$scope.browsedFiles.length;i++){
+                $scope.saveUploadData.push({"fileName":$scope.browsedFiles[i].fileName,"uploadStatus":"Uploaded","termCategory":"","Notes":$scope.browsedFiles[i].notes});
+ 
+            }
+            console.log($scope.saveUploadData);
+ 
+        }
  
 }];
